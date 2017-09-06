@@ -212,7 +212,7 @@ struct audio_stream *construct_modplug_stream(char *filename, Uint32 frequency,
 
       construct_audio_stream((struct audio_stream *)mp_stream, mp_mix_data,
        mp_set_volume, mp_set_repeat, mp_set_order, mp_set_position,
-       mp_get_order, mp_get_position, mp_destruct, volume, repeat);
+       mp_get_order, mp_get_position, NULL, mp_destruct, volume, repeat);
     }
 
     free(input_buffer);

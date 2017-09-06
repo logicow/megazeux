@@ -850,6 +850,8 @@ __audio_c_maybe_static void construct_audio_stream(
  void (* set_position)(struct audio_stream *a_src, Uint32 pos),
  Uint32 (* get_order)(struct audio_stream *a_src),
  Uint32 (* get_position)(struct audio_stream *a_src),
+ void (* spot_sample)(struct audio_stream *a_src, Uint32 frequency,
+  Uint32 sample),
  void (* destruct)(struct audio_stream *a_src),
  Uint32 volume, Uint32 repeat)
 {
@@ -860,6 +862,7 @@ __audio_c_maybe_static void construct_audio_stream(
   a_src->set_position = set_position;
   a_src->get_order = get_order;
   a_src->get_position = get_position;
+  a_src->spot_sample = spot_sample;
   a_src->destruct = destruct;
 
   if(set_volume)
@@ -962,7 +965,7 @@ static struct audio_stream *construct_vorbis_stream(char *filename,
 
         construct_audio_stream((struct audio_stream *)v_stream,
          vorbis_mix_data, vorbis_set_volume, vorbis_set_repeat,
-         NULL, vorbis_set_position, NULL, vorbis_get_position,
+         NULL, vorbis_set_position, NULL, vorbis_get_position, NULL,
          vorbis_destruct, volume, repeat);
       }
       else
@@ -1367,8 +1370,8 @@ static struct audio_stream *construct_wav_stream(char *filename,
 
       construct_audio_stream((struct audio_stream *)w_stream,
        wav_mix_data, wav_set_volume, wav_set_repeat,
-       NULL, wav_set_position, NULL, wav_get_position, wav_destruct,
-       volume, repeat);
+       NULL, wav_set_position, NULL, wav_get_position, NULL,
+       wav_destruct, volume, repeat);
     }
   }
 
@@ -1385,7 +1388,7 @@ static struct audio_stream *construct_pc_speaker_stream(void)
   pcs_stream = ccalloc(1, sizeof(struct pc_speaker_stream));
 
   construct_audio_stream((struct audio_stream *)pcs_stream, pcs_mix_data,
-   pcs_set_volume, NULL, NULL, NULL, NULL, NULL, pcs_destruct,
+   pcs_set_volume, NULL, NULL, NULL, NULL, NULL, NULL, pcs_destruct,
    audio.sfx_volume * 255 / 8, 0);
 
   return (struct audio_stream *)pcs_stream;
@@ -1805,7 +1808,13 @@ void volume_module(int vol)
 
 void spot_sample(int freq, int sample)
 {
-
+  if(audio.primary_stream && audio.primary_stream->spot_sample)
+  {
+    LOCK();
+    audio.primary_stream->spot_sample(audio.primary_stream,
+     (freq_conversion / freq) / 2, (unsigned int)sample);
+    UNLOCK();
+  }
 }
 
 void shift_frequency(int freq)

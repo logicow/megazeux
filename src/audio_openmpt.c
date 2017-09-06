@@ -173,8 +173,8 @@ struct audio_stream *construct_openmpt_stream(char *filename, Uint32 frequency,
 
       construct_audio_stream((struct audio_stream *)omp_stream,
        omp_mix_data, omp_set_volume, omp_set_repeat, omp_set_order,
-       omp_set_position, omp_get_order, omp_get_position, omp_destruct,
-       volume, repeat);
+       omp_set_position, omp_get_order, omp_get_position, NULL,
+       omp_destruct, volume, repeat);
     }
 
     fclose(input_file);

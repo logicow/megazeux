@@ -213,7 +213,7 @@ struct audio_stream *construct_mikmod_stream(char *filename, Uint32 frequency,
 
       construct_audio_stream((struct audio_stream *)mm_stream,
        mm_mix_data, mm_set_volume, mm_set_repeat, mm_set_order,
-       mm_set_position, mm_get_order, mm_get_position, mm_destruct,
+       mm_set_position, mm_get_order, mm_get_position, NULL, mm_destruct,
        volume, repeat);
     }
 

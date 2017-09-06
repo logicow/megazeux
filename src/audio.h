@@ -51,6 +51,8 @@ struct audio_stream
   void (* set_position)(struct audio_stream *a_src, Uint32 pos);
   Uint32 (* get_order)(struct audio_stream *a_src);
   Uint32 (* get_position)(struct audio_stream *a_src);
+  void (* spot_sample)(struct audio_stream *a_src, Uint32 frequency,
+   Uint32 sample);
   void (* destruct)(struct audio_stream *a_src);
 };
 
@@ -183,6 +185,8 @@ void construct_audio_stream(struct audio_stream *a_src,
  void (* set_position)(struct audio_stream *a_src, Uint32 pos),
  Uint32 (* get_order)(struct audio_stream *a_src),
  Uint32 (* get_position)(struct audio_stream *a_src),
+ void (* spot_sample)(struct audio_stream *a_src, Uint32 frequency,
+  Uint32 sample),
  void (* destruct)(struct audio_stream *a_src),
  Uint32 volume, Uint32 repeat);
 

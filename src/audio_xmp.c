@@ -20,6 +20,8 @@
 
 // Provides a libxmp module stream backend
 
+#include <math.h>
+
 #include "audio.h"
 #include "audio_xmp.h"
 #include "const.h"
@@ -127,8 +129,19 @@ static Uint32 audio_xmp_get_frequency(struct sampled_stream *s_src)
   return ((struct xmp_stream *)s_src)->effective_frequency;
 }
 
+static void audio_xmp_spot_sample(struct audio_stream *a_src,
+ Uint32 frequency, Uint32 sample)
+{
+  // Convert frequency to nearest chromatic note
+  int note = (int)(12.0 * log(frequency / 523.3) / log(2) + .5);
+
+  xmp_smix_play_instrument(((struct xmp_stream *)a_src)->ctx,
+   (int)sample, note, 64, 0);
+}
+
 static void audio_xmp_destruct(struct audio_stream *a_src)
 {
+  xmp_end_smix(((struct xmp_stream *)a_src)->ctx);
   xmp_end_player(((struct xmp_stream *)a_src)->ctx);
   xmp_release_module(((struct xmp_stream *)a_src)->ctx);
   xmp_free_context(((struct xmp_stream *)a_src)->ctx);
@@ -148,6 +161,7 @@ struct audio_stream *construct_xmp_stream(char *filename, Uint32 frequency,
   if(ctx)
   {
     xmp_set_player(ctx, XMP_PLAYER_DEFPAN, 50);
+    xmp_start_smix(ctx, 1, 0);
 
     switch(xmp_resample_mode)
     {
@@ -192,8 +206,9 @@ struct audio_stream *construct_xmp_stream(char *filename, Uint32 frequency,
       ret_val = (struct audio_stream *)xmp_stream;
 
       construct_audio_stream((struct audio_stream *)xmp_stream,
-       audio_xmp_mix_data, audio_xmp_set_volume, audio_xmp_set_repeat, audio_xmp_set_order,
-       audio_xmp_set_position, audio_xmp_get_order, audio_xmp_get_position, audio_xmp_destruct,
+       audio_xmp_mix_data, audio_xmp_set_volume, audio_xmp_set_repeat,
+       audio_xmp_set_order, audio_xmp_set_position, audio_xmp_get_order,
+       audio_xmp_get_position, audio_xmp_spot_sample, audio_xmp_destruct,
        volume, repeat);
     }
   }
